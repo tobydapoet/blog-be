@@ -1,26 +1,44 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Client } from './entities/client.entity';
+import { DeepPartial, Repository } from 'typeorm';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
 
 @Injectable()
 export class ClientService {
-  create(createClientDto: CreateClientDto) {
-    return 'This action adds a new client';
+  constructor(
+    @InjectRepository(Client) private clientRepo: Repository<Client>,
+  ) {}
+
+  async findAll() {
+    return await this.clientRepo.find();
   }
 
-  findAll() {
-    return `This action returns all client`;
+  async findOne(id: number) {
+    return await this.clientRepo.findOne({ where: { id } });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} client`;
+  async findByAccount(id: string) {
+    return await this.clientRepo.findOne({ where: { account: { id } } });
   }
 
-  update(id: number, updateClientDto: UpdateClientDto) {
-    return `This action updates a #${id} client`;
+  async create(createClientDto: CreateClientDto) {
+    const existing = await this.clientRepo.findOne({
+      where: { account: { id: createClientDto.accountId } },
+    });
+    if (existing) {
+      throw new Error('account is already in server');
+    }
+    const { accountId, ...rest } = createClientDto;
+    const client = this.clientRepo.create({
+      ...rest,
+      account: { id: accountId },
+    });
+    return await this.clientRepo.save(client);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} client`;
+  async update(id: string, updateClientDto: Partial<UpdateClientDto>) {
+    return await this.clientRepo.update({ account: { id } }, updateClientDto);
   }
 }

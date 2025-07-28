@@ -16,12 +16,15 @@ export class Post {
     eager: true,
     cascade: true,
   })
-  @JoinColumn({ name: 'client_id' })
+  @JoinColumn({ name: 'clientId' })
   client: Client;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   content: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column('json', { nullable: true })
   images: string[];
+
+  @Column({ type: 'boolean', default: false })
+  isDeleted: boolean;
 }

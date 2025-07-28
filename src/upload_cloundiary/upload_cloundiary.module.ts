@@ -4,6 +4,7 @@ import { UploadCloundiaryController } from './upload_cloundiary.controller';
 
 @Module({
   providers: [UploadCloundiaryService],
-  controllers: [UploadCloundiaryController]
+  controllers: [UploadCloundiaryController],
+  exports: [UploadCloundiaryService],
 })
 export class UploadCloundiaryModule {}

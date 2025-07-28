@@ -1,26 +1,45 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateBlogCategoryDto } from './dto/create-blog_category.dto';
-import { UpdateBlogCategoryDto } from './dto/update-blog_category.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { BlogCategory } from './entities/blog_category.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class BlogCategoryService {
-  create(createBlogCategoryDto: CreateBlogCategoryDto) {
-    return 'This action adds a new blogCategory';
+  constructor(
+    @InjectRepository(BlogCategory)
+    private blogCategoryRepo: Repository<BlogCategory>,
+  ) {}
+  async create(createBlogCategoryDto: CreateBlogCategoryDto) {
+    const exist = await this.blogCategoryRepo.findOne({
+      where: {
+        blog: { id: createBlogCategoryDto.blogId },
+        category: { id: createBlogCategoryDto.categoryId },
+      },
+    });
+    if (exist) {
+      return new Error('This blog already in this category!');
+    }
+    const blogCategory = this.blogCategoryRepo.create({
+      blog: { id: createBlogCategoryDto.blogId },
+      category: { id: createBlogCategoryDto.categoryId },
+    });
+
+    return this.blogCategoryRepo.save(blogCategory);
   }
 
-  findAll() {
-    return `This action returns all blogCategory`;
-  }
+  async remove(blogId: number, categoryId: number) {
+    const blogCategory = await this.blogCategoryRepo.findOne({
+      where: {
+        blog: { id: blogId },
+        category: { id: categoryId },
+      },
+    });
 
-  findOne(id: number) {
-    return `This action returns a #${id} blogCategory`;
-  }
+    if (!blogCategory) {
+      throw new NotFoundException('Blog category mapping not found.');
+    }
 
-  update(id: number, updateBlogCategoryDto: UpdateBlogCategoryDto) {
-    return `This action updates a #${id} blogCategory`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} blogCategory`;
+    await this.blogCategoryRepo.remove(blogCategory);
   }
 }

@@ -1,34 +1,45 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Body, Controller, Get, Param, Put } from '@nestjs/common';
 import { StaffService } from './staff.service';
-import { CreateStaffDto } from './dto/create-staff.dto';
+import { Role } from 'src/auth/enums/role.enum';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UpdateStaffDto } from './dto/update-staff.dto';
 
 @Controller('staff')
 export class StaffController {
   constructor(private readonly staffService: StaffService) {}
 
-  @Post()
-  create(@Body() createStaffDto: CreateStaffDto) {
-    return this.staffService.create(createStaffDto);
-  }
-
+  @Roles(Role.ADMIN, Role.STAFF)
   @Get()
-  findAll() {
-    return this.staffService.findAll();
+  async findAll() {
+    return await this.staffService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.staffService.findOne(+id);
+  findOne(@Param('id') id: number) {
+    return this.staffService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateStaffDto: UpdateStaffDto) {
-    return this.staffService.update(+id, updateStaffDto);
+  @Get('client/:id')
+  findByAccount(@Param('id') id: string) {
+    return this.staffService.findByAccount(id);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.staffService.remove(+id);
+  @Put(':id')
+  async update(
+    @Param('id') id: string,
+    @Body() updateStaffDto: UpdateStaffDto,
+  ) {
+    try {
+      const res = await this.staffService.update(id, updateStaffDto);
+      return {
+        success: true,
+        data: res,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        error: err.message,
+      };
+    }
   }
 }

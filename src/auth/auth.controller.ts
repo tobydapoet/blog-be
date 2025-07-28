@@ -15,7 +15,7 @@ import { JwtAuthGuard } from './guards/jwt-auth/jwt-auth.guard';
 import { Public } from './decorators/public.decorator';
 import { GoogleAuthGuard } from './guards/google-auth/google-auth.guard';
 
-//@Public()
+@Public()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -25,21 +25,30 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Req() req) {
-    const token = await this.authService.login(req.user.email);
-    return {
-      access_token: token.access_token,
-      refresh_token: token.refresh_token,
-    };
+    try {
+      console.log(req.user);
+      const token = await this.authService.login(req.user.email);
+      return {
+        success: true,
+        access_token: token.access_token,
+        refresh_token: token.refresh_token,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        error: err,
+      };
+    }
   }
 
+  @Public()
   @UseGuards(RefreshAuthGuard)
   @Post('refresh')
   async refreshToken(@Req() req) {
-    const access_token = await this.authService.refreshToken(req.email);
+    const access_token = await this.authService.refreshToken(req.sub);
     return { access_token };
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post('logout')
   async signOut(@Req() req) {
     try {

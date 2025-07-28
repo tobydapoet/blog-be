@@ -10,7 +10,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-@Entity()
+@Entity('blog')
 export class Blog {
   @PrimaryGeneratedColumn()
   id: number;
@@ -19,7 +19,7 @@ export class Blog {
     eager: true,
     cascade: true,
   })
-  @JoinColumn({ name: 'client_id' })
+  @JoinColumn({ name: 'clientId' })
   client: Client;
 
   @Column({ type: 'text', nullable: false })

@@ -8,15 +8,15 @@ export class Following {
 
   @ManyToOne(() => Client, (client) => client.followers, {
     eager: true,
-    cascade: true,
+    cascade: false,
   })
-  @JoinColumn({ name: 'client_id' })
+  @JoinColumn({ name: 'clientId' })
   follower: Client;
 
   @ManyToOne(() => Client, (client) => client.followed, {
     eager: true,
-    cascade: true,
+    cascade: false,
   })
-  @JoinColumn({ name: 'followed_id' })
+  @JoinColumn({ name: 'followedId' })
   followed: Client;
 }

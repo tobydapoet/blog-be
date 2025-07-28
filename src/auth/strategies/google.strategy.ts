@@ -3,7 +3,6 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-google-oauth20';
 import googleOauthConfig from '../config/google-oauth.config';
 import { ConfigType } from '@nestjs/config';
-import { VerifiedCallback } from 'passport-jwt';
 import { AuthService } from '../auth.service';
 
 @Injectable()
@@ -25,7 +24,8 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(profile: any) {
+  async validate(__: string, _: string, profile: any) {
+    console.log(profile);
     const account = await this.authService.validateGoogleAccount({
       email: profile.emails?.[0]?.value ?? null,
       name: profile.displayName ?? '',
@@ -34,7 +34,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
     });
     if (account) {
       const loginRes = await this.authService.login(account.email);
-      console.log(loginRes);
       return loginRes;
     }
     return null;

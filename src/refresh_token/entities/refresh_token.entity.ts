@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -16,6 +17,7 @@ export class RefreshToken {
     eager: true,
     cascade: true,
   })
+  @JoinColumn({ name: 'accountId' })
   account: Account;
 
   @Column({ type: 'text' })

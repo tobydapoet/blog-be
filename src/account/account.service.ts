@@ -3,14 +3,16 @@ import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Account } from './entities/account.entity';
-import { Repository } from 'typeorm';
-import { Client } from 'src/client/entities/client.entity';
+import { ILike, Repository } from 'typeorm';
+import { ClientService } from 'src/client/client.service';
+import { UploadCloundiaryService } from 'src/upload_cloundiary/upload_cloundiary.service';
 
 @Injectable()
 export class AccountService {
   constructor(
     @InjectRepository(Account) private AccountRepo: Repository<Account>,
-    @InjectRepository(Client) private ClientRepo: Repository<Client>,
+    private clientService: ClientService,
+    private uploadService: UploadCloundiaryService,
   ) {}
 
   async create(createAccountDto: CreateAccountDto) {
@@ -25,36 +27,74 @@ export class AccountService {
     const user = this.AccountRepo.create(createAccountDto);
     const savedUser = await this.AccountRepo.save(user);
 
-    const client = this.ClientRepo.create({
-      account: savedUser,
+    await this.clientService.create({
+      accountId: savedUser.id,
     });
-
-    await this.ClientRepo.save(client);
 
     return savedUser;
   }
 
+  async findOne(id: string) {
+    return await this.AccountRepo.findOne({ where: { id } });
+  }
+
   async findByEmail(email: string) {
-    return await this.AccountRepo.findOne({
-      where: {
-        email,
-      },
-    });
+    return await this.AccountRepo.findOne({ where: { email } });
   }
 
   findAll() {
-    return `This action returns all account`;
+    return this.AccountRepo.find();
   }
 
-  findOne(email: string) {
-    return `This action returns a #${email} account`;
+  findMany(keyword: string) {
+    return this.AccountRepo.find({
+      where: [
+        { email: ILike(`%${keyword}%`) },
+        { name: ILike(`%${keyword}%`) },
+      ],
+    });
   }
 
-  update(id: number, updateAccountDto: UpdateAccountDto) {
-    return `This action updates a #${id} account`;
+  async update(
+    id: string,
+    updateAccountDto: Partial<UpdateAccountDto>,
+    file?: Express.Multer.File,
+  ) {
+    const existing = await this.AccountRepo.findOne({
+      where: { id },
+    });
+
+    if (!existing) {
+      throw new Error('Email is not exist!');
+    }
+
+    if (file) {
+      if (existing.avatar_url) {
+        await this.uploadService.deleteImage(existing.avatar_url);
+      }
+      const uploadResult = await this.uploadService.uploadImage(
+        file?.buffer,
+        'account',
+      );
+      updateAccountDto.avatar_url = uploadResult.url;
+    }
+
+    await this.AccountRepo.update({ id }, updateAccountDto);
+
+    const updatedAccount = await this.AccountRepo.findOne({ where: { id } });
+
+    return updatedAccount;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} account`;
+  async remove(id: string) {
+    const existing = await this.AccountRepo.findOne({
+      where: { id },
+    });
+
+    if (!existing) {
+      throw new Error('Account is not exist!');
+    }
+
+    return await this.AccountRepo.update({ id }, { isDeleted: true });
   }
 }

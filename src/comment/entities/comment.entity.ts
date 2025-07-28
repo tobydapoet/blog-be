@@ -7,6 +7,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { CommentTableType } from '../types/commentTableType';
 
 @Entity('comment')
 export class Comment {
@@ -18,16 +19,16 @@ export class Comment {
 
   @Column({
     type: 'enum',
-    enum: ['comment', 'blog', 'post'],
+    enum: CommentTableType,
     nullable: false,
   })
-  commentTableType: 'comment' | 'blog' | 'post';
+  commentTableType: CommentTableType;
 
   @ManyToOne(() => Client, (client) => client.comments, {
     eager: true,
     cascade: true,
   })
-  @JoinColumn({ name: 'client_id' })
+  @JoinColumn({ name: 'clientId' })
   client: Client;
 
   @Column({ type: 'text', nullable: false })

@@ -32,7 +32,7 @@ export class AuthService {
       throw new UnauthorizedException('Incorrect password!');
     }
 
-    return { email: user.email };
+    return { id: user.id };
   }
 
   async login(email: string) {
@@ -49,7 +49,7 @@ export class AuthService {
     const payload: AuthJwtPayload = {
       sub: savedSession.id,
       role: savedSession.account.role,
-      email,
+      id: savedSession.account.id,
     };
     const [access_token, refresh_token] = await Promise.all([
       this.jwtService.signAsync(payload),
@@ -76,7 +76,7 @@ export class AuthService {
     }
     const payload: AuthJwtPayload = {
       sub: session.id,
-      email: session.account.email,
+      id: session.account.id,
       role: session.account.role,
     };
 
@@ -115,13 +115,14 @@ export class AuthService {
 
     return {
       sub: session.id,
-      email: session.account.email,
+      id: session.account.id,
       role: session.account.role,
     };
   }
 
   async validateGoogleAccount(googleAcount: CreateAccountDto) {
-    const acount = await this.accountService.findByEmail(googleAcount.email);
+    const acount = await this.accountService.findOne(googleAcount.email);
+    console.log('account db: ', acount);
     if (acount) return acount;
     return await this.accountService.create(googleAcount);
   }

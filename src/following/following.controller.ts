@@ -1,34 +1,55 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
 import { FollowingService } from './following.service';
-import { CreateFollowingDto } from './dto/create-following.dto';
-import { UpdateFollowingDto } from './dto/update-following.dto';
+import { FollowingDto } from './dto/following.dto';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('following')
 export class FollowingController {
   constructor(private readonly followingService: FollowingService) {}
 
+  @Public()
   @Post()
-  create(@Body() createFollowingDto: CreateFollowingDto) {
-    return this.followingService.create(createFollowingDto);
+  async create(@Body() followingDto: FollowingDto) {
+    try {
+      const res = await this.followingService.create(followingDto);
+      return {
+        success: true,
+        data: res,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        error: err.message,
+      };
+    }
   }
 
-  @Get()
-  findAll() {
-    return this.followingService.findAll();
+  @Public()
+  @Get('client/:id')
+  findByFollower(@Param('id') id: number) {
+    return this.followingService.findByFollower(id);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.followingService.findOne(+id);
+  @Public()
+  @Get('followed/:id')
+  findOne(@Param('id') id: number) {
+    return this.followingService.findByFollowed(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateFollowingDto: UpdateFollowingDto) {
-    return this.followingService.update(+id, updateFollowingDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.followingService.remove(+id);
+  @Public()
+  @Delete()
+  async remove(@Body() followingDto: FollowingDto) {
+    try {
+      await this.followingService.remove(followingDto);
+      return {
+        success: true,
+        message: 'Delete success!',
+      };
+    } catch (err) {
+      return {
+        success: false,
+        error: err.message,
+      };
+    }
   }
 }

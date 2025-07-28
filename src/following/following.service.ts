@@ -1,26 +1,47 @@
 import { Injectable } from '@nestjs/common';
-import { CreateFollowingDto } from './dto/create-following.dto';
-import { UpdateFollowingDto } from './dto/update-following.dto';
+import { FollowingDto } from './dto/following.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Following } from './entities/following.entity';
 
 @Injectable()
 export class FollowingService {
-  create(createFollowingDto: CreateFollowingDto) {
-    return 'This action adds a new following';
+  constructor(
+    @InjectRepository(Following) private followingRepo: Repository<Following>,
+  ) {}
+  async create(followingDto: FollowingDto) {
+    if (followingDto.clientId === followingDto.followedId) {
+      throw new Error("Can't follow yourself!");
+    }
+    const existing = await this.followingRepo.findOne({
+      where: {
+        follower: { id: followingDto.clientId },
+        followed: { id: followingDto.followedId },
+      },
+    });
+    if (existing) {
+      throw new Error('Already follow this client!');
+    }
+    const following = this.followingRepo.create({
+      follower: { id: followingDto.clientId },
+      followed: { id: followingDto.followedId },
+    });
+    const res = await this.followingRepo.save(following);
+    return await this.followingRepo.findOne({ where: { id: res.id } });
   }
 
-  findAll() {
-    return `This action returns all following`;
+  findByFollower(id: number) {
+    return this.followingRepo.find({ where: { follower: { id } } });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} following`;
+  findByFollowed(id: number) {
+    return this.followingRepo.find({ where: { followed: { id } } });
   }
 
-  update(id: number, updateFollowingDto: UpdateFollowingDto) {
-    return `This action updates a #${id} following`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} following`;
+  remove(followingDto: FollowingDto) {
+    return this.followingRepo.delete({
+      follower: { id: followingDto.clientId },
+      followed: { id: followingDto.followedId },
+    });
   }
 }

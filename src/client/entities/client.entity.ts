@@ -19,11 +19,8 @@ export class Client {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => Account, (account) => account.client, {
-    eager: true,
-    cascade: true,
-  })
-  @JoinColumn({ name: 'email' })
+  @OneToOne(() => Account, (account) => account.client)
+  @JoinColumn({ name: 'accountId' })
   account: Account;
 
   @Column({ type: 'text' })
@@ -37,6 +34,9 @@ export class Client {
 
   @Column({ type: 'text' })
   website_link: string;
+
+  @Column({ type: 'datetime', nullable: true })
+  birth: Date;
 
   @OneToMany(() => Blog, (blog) => blog.id)
   blogs: Blog[];

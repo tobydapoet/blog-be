@@ -9,25 +9,23 @@ import {
   Entity,
   OneToMany,
   OneToOne,
-  PrimaryColumn,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { RefreshToken } from 'src/refresh_token/entities/refresh_token.entity';
 import { Role } from 'src/auth/enums/role.enum';
 
 @Entity('account')
 export class Account {
-  @PrimaryColumn({
-    type: 'varchar',
-    length: 100,
-    nullable: false,
-    unique: true,
-  })
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'text', nullable: false, unique: true })
   email: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   avatar_url: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   password: string;
 
   @Column({ type: 'text', nullable: false })
@@ -40,7 +38,7 @@ export class Account {
   })
   role: Role;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   google_id: string;
 
   @Column({ type: 'boolean', default: false })
@@ -49,10 +47,16 @@ export class Account {
   @CreateDateColumn()
   createdAt: Date;
 
-  @OneToOne(() => Client, (client) => client.account)
+  @OneToOne(() => Client, (client) => client.account, {
+    eager: true,
+    cascade: true,
+  })
   client: Client;
 
-  @OneToOne(() => Staff, (staff) => staff.account)
+  @OneToOne(() => Staff, (staff) => staff.account, {
+    eager: true,
+    cascade: true,
+  })
   staff: Staff;
 
   @OneToMany(() => Chat, (chat) => chat.sender)

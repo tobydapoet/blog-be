@@ -15,21 +15,27 @@ export class Chat {
 
   @ManyToOne(() => Account, (account) => account.senders, {
     eager: true,
-    cascade: true,
+    cascade: false,
   })
-  @JoinColumn({ name: 'sender_id' })
+  @JoinColumn({ name: 'senderId' })
   sender: Account;
 
   @ManyToOne(() => Account, (account) => account.receivers, {
     eager: true,
-    cascade: true,
+    cascade: false,
   })
-  @JoinColumn({ name: 'receiver_id' })
+  @JoinColumn({ name: 'receiverId' })
   receiver: Account;
 
-  @Column({ type: 'text', nullable: false })
+  @Column({ type: 'text', nullable: true })
   content: string;
+
+  @Column('json', { nullable: true })
+  images: string[];
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @Column({ type: 'boolean', default: false })
+  isDeleted: boolean;
 }

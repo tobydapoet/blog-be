@@ -17,7 +17,7 @@ export class Notification {
     eager: true,
     cascade: true,
   })
-  @JoinColumn({ name: 'client_id' })
+  @JoinColumn({ name: 'clientId' })
   client: Client;
 
   @Column({

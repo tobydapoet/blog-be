@@ -1,7 +1,6 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
 import { FavouriteService } from './favourite.service';
 import { CreateFavouriteDto } from './dto/create-favourite.dto';
-import { UpdateFavouriteDto } from './dto/update-favourite.dto';
 
 @Controller('favourite')
 export class FavouriteController {
@@ -9,26 +8,43 @@ export class FavouriteController {
 
   @Post()
   create(@Body() createFavouriteDto: CreateFavouriteDto) {
-    return this.favouriteService.create(createFavouriteDto);
+    try {
+      const res = this.favouriteService.create(createFavouriteDto);
+      return {
+        success: true,
+        data: res,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        error: err.message,
+      };
+    }
   }
 
-  @Get()
-  findAll() {
-    return this.favouriteService.findAll();
+  @Get('/client/:id')
+  findByClient(@Param('id') id: number) {
+    return this.favouriteService.findByClient(id);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.favouriteService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateFavouriteDto: UpdateFavouriteDto) {
-    return this.favouriteService.update(+id, updateFavouriteDto);
+  findOne(@Param('id') id: number) {
+    return this.favouriteService.findOne(id);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.favouriteService.remove(+id);
+  async remove(@Param('id') id: number) {
+    try {
+      await this.favouriteService.remove(id);
+      return {
+        success: true,
+        message: 'Delete success!',
+      };
+    } catch (err) {
+      return {
+        success: false,
+        error: err.message,
+      };
+    }
   }
 }
