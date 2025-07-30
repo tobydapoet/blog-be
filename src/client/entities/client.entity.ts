@@ -23,16 +23,16 @@ export class Client {
   @JoinColumn({ name: 'accountId' })
   account: Account;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   bio: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   facebook_link: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   instagram_link: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   website_link: string;
 
   @Column({ type: 'datetime', nullable: true })

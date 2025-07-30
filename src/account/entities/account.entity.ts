@@ -19,7 +19,7 @@ export class Account {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'text', nullable: false, unique: true })
+  @Column({ type: 'varchar', length: 255, nullable: false, unique: true })
   email: string;
 
   @Column({ type: 'text', nullable: true })

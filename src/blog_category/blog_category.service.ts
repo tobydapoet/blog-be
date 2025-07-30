@@ -1,14 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateBlogCategoryDto } from './dto/create-blog_category.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BlogCategory } from './entities/blog_category.entity';
 import { Repository } from 'typeorm';
+import { RedisClientType } from 'redis';
 
 @Injectable()
 export class BlogCategoryService {
   constructor(
     @InjectRepository(BlogCategory)
     private blogCategoryRepo: Repository<BlogCategory>,
+    @Inject('REDIS_CLIENT') private readonly redisClient: RedisClientType,
   ) {}
   async create(createBlogCategoryDto: CreateBlogCategoryDto) {
     const exist = await this.blogCategoryRepo.findOne({
@@ -25,7 +27,14 @@ export class BlogCategoryService {
       category: { id: createBlogCategoryDto.categoryId },
     });
 
-    return this.blogCategoryRepo.save(blogCategory);
+    const savedBlogCategory = await this.blogCategoryRepo.save(blogCategory);
+    if (savedBlogCategory) {
+      await this.redisClient.del(`blog:${createBlogCategoryDto.blogId}`);
+      await this.redisClient.del(
+        `category:${createBlogCategoryDto.categoryId}`,
+      );
+    }
+    return savedBlogCategory;
   }
 
   async remove(blogId: number, categoryId: number) {
@@ -40,6 +49,11 @@ export class BlogCategoryService {
       throw new NotFoundException('Blog category mapping not found.');
     }
 
-    await this.blogCategoryRepo.remove(blogCategory);
+    const removed = await this.blogCategoryRepo.remove(blogCategory);
+    if (removed) {
+      await this.redisClient.del(`blog:${blogId}`);
+      await this.redisClient.del(`category:${categoryId}`);
+    }
+    return removed;
   }
 }

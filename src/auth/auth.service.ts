@@ -121,8 +121,7 @@ export class AuthService {
   }
 
   async validateGoogleAccount(googleAcount: CreateAccountDto) {
-    const acount = await this.accountService.findOne(googleAcount.email);
-    console.log('account db: ', acount);
+    const acount = await this.accountService.findByEmail(googleAcount.email);
     if (acount) return acount;
     return await this.accountService.create(googleAcount);
   }

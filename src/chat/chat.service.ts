@@ -1,19 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Chat } from './entities/chat.entity';
 import { Repository } from 'typeorm';
-import { AccountService } from 'src/account/account.service';
-import { Account } from 'src/account/entities/account.entity';
 import { UploadCloundiaryService } from 'src/upload_cloundiary/upload_cloundiary.service';
+import { RedisClientType } from 'redis';
 
 @Injectable()
 export class ChatService {
   constructor(
     @InjectRepository(Chat) private chatRepo: Repository<Chat>,
-    private accountService: AccountService,
     private uploadService: UploadCloundiaryService,
+    @Inject('REDIS_CLIENT') private readonly redisClient: RedisClientType,
   ) {}
 
   async create(createChatDto: CreateChatDto, files?: Express.Multer.File[]) {
@@ -40,6 +39,9 @@ export class ChatService {
       ...res,
     });
 
+    await this.redisClient.del(`chat:${sender}`);
+    await this.redisClient.del(`chat:${receiver}`);
+
     return await this.chatRepo.save(chat);
   }
 
@@ -60,6 +62,11 @@ export class ChatService {
   }
 
   async getAllConversations(userId: string) {
+    const cachedKey = `chat:${userId}`;
+    const cached = await this.redisClient.get(cachedKey);
+    if (cached) {
+      return JSON.parse(cached);
+    }
     const chats = await this.chatRepo
       .createQueryBuilder('chat')
       .leftJoinAndSelect('chat.sender', 'sender')
@@ -80,11 +87,29 @@ export class ChatService {
         map.set(key, chat);
       }
     }
+    const result = Array.from(map.values());
 
-    return Array.from(map.values());
+    await this.redisClient.set(cachedKey, JSON.stringify(result), {
+      EX: 300,
+    });
+
+    return result;
   }
 
   async update(id: number, updateChatDto: UpdateChatDto) {
-    return this.chatRepo.update({ id }, updateChatDto);
+    await this.chatRepo.update({ id }, updateChatDto);
+
+    const chat = await this.chatRepo.findOne({
+      where: { id },
+    });
+
+    if (chat) {
+      const senderId = chat.sender.id;
+      const receiverId = chat.receiver.id;
+      await this.redisClient.del(`chat:${senderId}`);
+      await this.redisClient.del(`chat:${receiverId}`);
+    }
+
+    return chat;
   }
 }

@@ -9,6 +9,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { StatusType } from '../types/status';
 
 @Entity('blog')
 export class Blog {
@@ -30,6 +31,9 @@ export class Blog {
 
   @Column({ type: 'text', nullable: false })
   thumbnail: string;
+
+  @Column({ type: 'enum', enum: StatusType, default: StatusType.WAIT })
+  status: StatusType;
 
   @CreateDateColumn()
   createdAt: Date;

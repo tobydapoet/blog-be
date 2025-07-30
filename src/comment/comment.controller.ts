@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Param, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Query } from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
+import { CommentTableType } from './types/commentTableType';
 
 @Controller('comment')
 export class CommentController {
@@ -26,6 +27,11 @@ export class CommentController {
   @Get()
   findAll() {
     return this.commentService.findAll();
+  }
+
+  @Get('get_type')
+  findByType(@Query('type') type: CommentTableType, @Query('id') id: number) {
+    return this.commentService.findByType(id, type);
   }
 
   @Get(':id')

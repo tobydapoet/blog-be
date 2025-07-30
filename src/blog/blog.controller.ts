@@ -13,11 +13,15 @@ import { BlogService } from './blog.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Public } from 'src/auth/decorators/public.decorator';
+import { Role } from 'src/auth/enums/role.enum';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 
 @Controller('blog')
 export class BlogController {
   constructor(private readonly blogService: BlogService) {}
 
+  @Roles(Role.CLIENT)
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   create(
@@ -38,6 +42,7 @@ export class BlogController {
     }
   }
 
+  @Public()
   @Get()
   findAll() {
     return this.blogService.findAll();
@@ -59,10 +64,11 @@ export class BlogController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.blogService.findOne(+id);
+  findOne(@Param('id') id: number) {
+    return this.blogService.findOne(id);
   }
 
+  @Roles(Role.CLIENT)
   @Put(':id')
   @UseInterceptors(FileInterceptor('file'))
   async update(
@@ -72,6 +78,23 @@ export class BlogController {
   ) {
     try {
       const res = await this.blogService.update(id, updateBlogDto, file);
+      return {
+        success: true,
+        data: res,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        error: err,
+      };
+    }
+  }
+
+  @Roles(Role.ADMIN, Role.STAFF)
+  @Put('status/:id')
+  async updateStatus(@Param('id') id: number, @Body() status: number) {
+    try {
+      const res = await this.blogService.updateStatus(id, status);
       return {
         success: true,
         data: res,

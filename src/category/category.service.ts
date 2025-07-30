@@ -1,14 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
 import { Category } from './entities/category.entity';
+import { RedisClientType } from 'redis';
 
 @Injectable()
 export class CategoryService {
   constructor(
     @InjectRepository(Category) private categoryRepo: Repository<Category>,
+    @Inject('REDIS_CLIENT') private readonly redisClient: RedisClientType,
   ) {}
 
   async create(createCategoryDto: CreateCategoryDto) {
@@ -19,21 +21,58 @@ export class CategoryService {
       throw new Error('This category is already exist!');
     }
     const category = this.categoryRepo.create(createCategoryDto);
-    return await this.categoryRepo.save(category);
+    const savedCategory = await this.categoryRepo.save(category);
+    if (savedCategory) {
+      await this.redisClient.del(`category:all`);
+    }
+    return savedCategory;
   }
 
-  findAll() {
-    return this.categoryRepo.find();
+  async findAll() {
+    const cachedKey = `category:all`;
+    const cached = await this.redisClient.get(cachedKey);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+    const categories = await this.categoryRepo.find();
+    if (categories) {
+      await this.redisClient.set(cachedKey, JSON.stringify(categories), {
+        EX: 60 * 5,
+      });
+    }
+    return categories;
   }
 
-  findByBlog(id: number) {
-    return this.categoryRepo.find({
+  async findByBlog(id: number) {
+    const cachedKey = `category-blog:${id}`;
+    const cached = await this.redisClient.get(cachedKey);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+    const categories = await this.categoryRepo.find({
       where: { blog_category: { blog: { id } } },
     });
+    if (categories) {
+      return this.redisClient.set(cachedKey, JSON.stringify(categories), {
+        EX: 60 * 5,
+      });
+    }
+    return categories;
   }
 
-  findOne(id: number) {
-    return this.categoryRepo.findOne({ where: { id } });
+  async findOne(id: number) {
+    const cachedKey = `category-blog:${id}`;
+    const cached = await this.redisClient.get(cachedKey);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+    const category = this.categoryRepo.findOne({ where: { id } });
+    if (category) {
+      return this.redisClient.set(cachedKey, JSON.stringify(category), {
+        EX: 60 * 5,
+      });
+    }
+    return category;
   }
 
   findMany(name?: string) {
@@ -51,6 +90,10 @@ export class CategoryService {
     }
 
     await this.categoryRepo.update({ id }, updateCategoryDto);
-    return await this.categoryRepo.findOne({ where: { id } });
+    const updatedCategory = await this.categoryRepo.findOne({ where: { id } });
+    if (updatedCategory) {
+      await this.redisClient.del('blog:all');
+    }
+    return updatedCategory;
   }
 }

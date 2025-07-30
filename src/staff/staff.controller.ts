@@ -19,7 +19,7 @@ export class StaffController {
     return this.staffService.findOne(id);
   }
 
-  @Get('client/:id')
+  @Get('staff/:id')
   findByAccount(@Param('id') id: string) {
     return this.staffService.findByAccount(id);
   }

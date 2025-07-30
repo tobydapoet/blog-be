@@ -7,6 +7,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { NotificationType } from '../types/notification';
 
 @Entity('notification')
 export class Notification {
@@ -20,29 +21,17 @@ export class Notification {
   @JoinColumn({ name: 'clientId' })
   client: Client;
 
-  @Column({
-    type: 'enum',
-    enum: [
-      'new_blog',
-      'new_post',
-      `like_blog`,
-      'like_post',
-      'comment_response',
-    ],
-    nullable: false,
-  })
-  type:
-    | 'new_blog'
-    | 'new_post'
-    | `like_blog`
-    | 'like_post'
-    | 'comment_response';
+  @Column({ type: 'enum', enum: NotificationType, nullable: false })
+  type: NotificationType;
 
   @Column({ type: 'int', nullable: true })
   refId: number;
 
   @Column({ type: 'text', nullable: true })
   message: string;
+
+  @Column({ type: 'boolean', default: true })
+  active: boolean;
 
   @CreateDateColumn()
   createdAt: Date;

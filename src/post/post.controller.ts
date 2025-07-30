@@ -13,11 +13,15 @@ import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { Public } from 'src/auth/decorators/public.decorator';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { Role } from 'src/auth/enums/role.enum';
 
 @Controller('post')
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
+  @Roles(Role.CLIENT)
   @Post()
   @UseInterceptors(FilesInterceptor('files'))
   async create(
@@ -38,6 +42,7 @@ export class PostController {
     }
   }
 
+  @Public()
   @Get()
   findAll() {
     return this.postService.findAll();

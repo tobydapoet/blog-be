@@ -12,11 +12,14 @@ import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { error } from 'console';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { Role } from 'src/auth/enums/role.enum';
 
 @Controller('category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
+  @Roles(Role.ADMIN, Role.STAFF)
   @Post()
   async create(@Body() createCategoryDto: CreateCategoryDto) {
     try {
@@ -53,6 +56,7 @@ export class CategoryController {
     return this.categoryService.findOne(+id);
   }
 
+  @Roles(Role.ADMIN, Role.STAFF)
   @Put(':id')
   async update(
     @Param('id') id: string,

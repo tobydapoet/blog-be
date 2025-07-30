@@ -17,20 +17,23 @@ import { NotificationModule } from './notification/notification.module';
 import { AuthModule } from './auth/auth.module';
 import { RefreshTokenModule } from './refresh_token/refresh_token.module';
 import { UploadCloundiaryModule } from './upload_cloundiary/upload_cloundiary.module';
+import { CacheModule } from '@nestjs/cache-manager';
+import { redisStore } from 'cache-manager-ioredis-yet';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: 'localhost',
-      port: 3306,
-      username: 'root',
-      password: '',
-      database: 'blog-app-nest',
+      host: process.env.DB_HOST,
+      port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 3306,
+      username: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_DATABASE,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
     }),
-    AccountModule,
+
     ClientModule,
     StaffModule,
     CategoryModule,
@@ -45,6 +48,7 @@ import { UploadCloundiaryModule } from './upload_cloundiary/upload_cloundiary.mo
     AuthModule,
     RefreshTokenModule,
     UploadCloundiaryModule,
+    RedisModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -3,11 +3,14 @@ import { FollowingDto } from './dto/following.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Following } from './entities/following.entity';
+import { NotificationService } from 'src/notification/notification.service';
+import { NotificationType } from 'src/notification/types/notification';
 
 @Injectable()
 export class FollowingService {
   constructor(
     @InjectRepository(Following) private followingRepo: Repository<Following>,
+    private notificationService: NotificationService,
   ) {}
   async create(followingDto: FollowingDto) {
     if (followingDto.clientId === followingDto.followedId) {
@@ -27,7 +30,18 @@ export class FollowingService {
       followed: { id: followingDto.followedId },
     });
     const res = await this.followingRepo.save(following);
-    return await this.followingRepo.findOne({ where: { id: res.id } });
+    const followingRes = await this.followingRepo.findOne({
+      where: { id: res.id },
+    });
+    if (followingRes) {
+      return this.notificationService.create({
+        clientId: res.followed.id,
+        message: `${res.follower.account.name} justed follow you!`,
+        refId: res.id,
+        type: NotificationType.FOLLOW,
+      });
+    }
+    return followingRes;
   }
 
   findByFollower(id: number) {

@@ -7,6 +7,8 @@ import { Comment } from 'src/comment/entities/comment.entity';
 import { Post } from 'src/post/entities/post.entity';
 import { Blog } from 'src/blog/entities/blog.entity';
 import { FavouriteTableType } from './types/favouriteTableType';
+import { NotificationService } from 'src/notification/notification.service';
+import { NotificationType } from 'src/notification/types/notification';
 
 @Injectable()
 export class FavouriteService {
@@ -15,6 +17,7 @@ export class FavouriteService {
     @InjectRepository(Comment) private commentRepo: Repository<Comment>,
     @InjectRepository(Post) private postRepo: Repository<Post>,
     @InjectRepository(Blog) private blogRepo: Repository<Blog>,
+    private notificationService: NotificationService,
   ) {}
 
   handleTarget = async (fav: Favourite) => {
@@ -63,8 +66,36 @@ export class FavouriteService {
 
   async create(createFavouriteDto: CreateFavouriteDto) {
     const favourite = this.favouriteRepo.create(createFavouriteDto);
-    await this.commentRepo.save(favourite);
-    return this.findOne(favourite.id);
+    await this.favouriteRepo.save(favourite);
+    const createdFavourite = await this.findOne(favourite.id);
+    if (createdFavourite) {
+      if (favourite.favouriteTableType === FavouriteTableType.BLOG) {
+        const blog = await this.blogRepo.findOne({
+          where: { id: favourite.favouriteTableId },
+        });
+        if (blog) {
+          return await this.notificationService.create({
+            clientId: blog?.client.id,
+            message: `${favourite.client.id} just like your blog!`,
+            refId: blog.id,
+            type: NotificationType.LIKEBLOG,
+          });
+        }
+      } else {
+        const post = await this.postRepo.findOne({
+          where: { id: favourite.favouriteTableId },
+        });
+        if (post) {
+          return await this.notificationService.create({
+            clientId: post?.client.id,
+            message: `${favourite.client.id} just like your post!`,
+            refId: post.id,
+            type: NotificationType.LIKEBLOG,
+          });
+        }
+      }
+    }
+    return createdFavourite;
   }
 
   async remove(id: number) {
