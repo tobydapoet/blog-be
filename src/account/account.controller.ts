@@ -17,6 +17,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Public } from 'src/auth/decorators/public.decorator';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('account')
 export class AccountController {
@@ -52,18 +53,21 @@ export class AccountController {
   }
 
   @Roles(Role.ADMIN, Role.STAFF)
+  @ApiBearerAuth()
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.accountService.findOne(id);
   }
 
   @Roles(Role.ADMIN, Role.STAFF)
+  @ApiBearerAuth()
   @Get(':keyword')
   findMany(@Query('keyword') keyword: string) {
     return this.accountService.findMany(keyword);
   }
 
   @Put(':id')
+  @ApiBearerAuth()
   @UseInterceptors(FileInterceptor('file'))
   async update(
     @Param('id') id: string,
@@ -86,6 +90,7 @@ export class AccountController {
   }
 
   @Put(':id')
+  @ApiBearerAuth()
   async remove(@Param('id') id: string) {
     try {
       await this.accountService.remove(id);

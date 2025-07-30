@@ -1,11 +1,13 @@
 import { Controller, Post, Body, Delete, Query } from '@nestjs/common';
 import { BlogCategoryService } from './blog_category.service';
 import { CreateBlogCategoryDto } from './dto/create-blog_category.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('blog-category')
 export class BlogCategoryController {
   constructor(private readonly blogCategoryService: BlogCategoryService) {}
 
+  @ApiBearerAuth()
   @Post()
   async create(@Body() createBlogCategoryDto: CreateBlogCategoryDto) {
     try {
@@ -22,6 +24,7 @@ export class BlogCategoryController {
     }
   }
 
+  @ApiBearerAuth()
   @Delete()
   async remove(
     @Query('blog') blogId: number,

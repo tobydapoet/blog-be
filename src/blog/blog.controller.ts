@@ -16,12 +16,14 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Public } from 'src/auth/decorators/public.decorator';
 import { Role } from 'src/auth/enums/role.enum';
 import { Roles } from 'src/auth/decorators/roles.decorator';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('blog')
 export class BlogController {
   constructor(private readonly blogService: BlogService) {}
 
   @Roles(Role.CLIENT)
+  @ApiBearerAuth()
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   create(
@@ -42,32 +44,38 @@ export class BlogController {
     }
   }
 
+  @ApiBearerAuth()
   @Public()
   @Get()
   findAll() {
     return this.blogService.findAll();
   }
 
+  @ApiBearerAuth()
   @Get('client/:id')
   findByClient(@Param('id') id: number) {
     return this.blogService.findByClient(id);
   }
 
+  @ApiBearerAuth()
   @Get('category/:category')
   async findByCategory(@Param('category') category: string) {
     return await this.blogService.findByCategory(category);
   }
 
+  @ApiBearerAuth()
   @Get('search')
   async findMany(@Query('keyword') keyword: string) {
     return await this.blogService.findMany(keyword);
   }
 
+  @ApiBearerAuth()
   @Get(':id')
   findOne(@Param('id') id: number) {
     return this.blogService.findOne(id);
   }
 
+  @ApiBearerAuth()
   @Roles(Role.CLIENT)
   @Put(':id')
   @UseInterceptors(FileInterceptor('file'))

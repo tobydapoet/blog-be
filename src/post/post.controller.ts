@@ -16,11 +16,13 @@ import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { Public } from 'src/auth/decorators/public.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('post')
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
+  @ApiBearerAuth()
   @Roles(Role.CLIENT)
   @Post()
   @UseInterceptors(FilesInterceptor('files'))
@@ -48,21 +50,25 @@ export class PostController {
     return this.postService.findAll();
   }
 
+  @ApiBearerAuth()
   @Get('search')
   findMany(@Query('keyword') keyword: string) {
     return this.postService.findMany(keyword);
   }
 
+  @ApiBearerAuth()
   @Get('client/:id')
   findByClient(@Param('id') id: number) {
     return this.postService.findByClient(id);
   }
 
+  @ApiBearerAuth()
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.postService.findOne(+id);
   }
 
+  @ApiBearerAuth()
   @Put(':id')
   @UseInterceptors(FileInterceptor('files'))
   async update(

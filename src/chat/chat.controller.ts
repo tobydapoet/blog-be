@@ -15,11 +15,13 @@ import { ChatService } from './chat.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
+  @ApiBearerAuth()
   @Get('2users')
   async getChatBetweenTwoUsers(
     @Query('user1') user1: string,
@@ -28,11 +30,13 @@ export class ChatController {
     return this.chatService.getChatBetweenTwoUsers(user1, user2);
   }
 
+  @ApiBearerAuth()
   @Get('user/:id')
   async getAllConversations(@Param('id') id: string) {
     return this.chatService.getAllConversations(id);
   }
 
+  @ApiBearerAuth()
   @Post()
   @UseInterceptors(FileInterceptor('files'))
   create(
@@ -53,6 +57,7 @@ export class ChatController {
     }
   }
 
+  @ApiBearerAuth()
   @Put(':id')
   update(@Param('id') id: number, @Body() updateChatDto: UpdateChatDto) {
     try {

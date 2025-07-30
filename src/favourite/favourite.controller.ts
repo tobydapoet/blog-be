@@ -1,7 +1,9 @@
 import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
 import { FavouriteService } from './favourite.service';
 import { CreateFavouriteDto } from './dto/create-favourite.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth()
 @Controller('favourite')
 export class FavouriteController {
   constructor(private readonly favouriteService: FavouriteService) {}

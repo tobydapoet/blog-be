@@ -3,11 +3,13 @@ import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { CommentTableType } from './types/commentTableType';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('comment')
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
+  @ApiBearerAuth()
   @Post()
   async create(@Body() createCommentDto: CreateCommentDto) {
     try {
@@ -24,21 +26,25 @@ export class CommentController {
     }
   }
 
+  @ApiBearerAuth()
   @Get()
   findAll() {
     return this.commentService.findAll();
   }
 
+  @ApiBearerAuth()
   @Get('get_type')
   findByType(@Query('type') type: CommentTableType, @Query('id') id: number) {
     return this.commentService.findByType(id, type);
   }
 
+  @ApiBearerAuth()
   @Get(':id')
   findOne(@Param('id') id: number) {
     return this.commentService.findOne(id);
   }
 
+  @ApiBearerAuth()
   @Put(':id')
   update(@Param('id') id: number, @Body() updateCommentDto: UpdateCommentDto) {
     try {

@@ -1,13 +1,13 @@
 import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
 import { FollowingService } from './following.service';
 import { FollowingDto } from './dto/following.dto';
-import { Public } from 'src/auth/decorators/public.decorator';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth()
 @Controller('following')
 export class FollowingController {
   constructor(private readonly followingService: FollowingService) {}
 
-  @Public()
   @Post()
   async create(@Body() followingDto: FollowingDto) {
     try {
@@ -24,19 +24,16 @@ export class FollowingController {
     }
   }
 
-  @Public()
   @Get('client/:id')
   findByFollower(@Param('id') id: number) {
     return this.followingService.findByFollower(id);
   }
 
-  @Public()
   @Get('followed/:id')
   findOne(@Param('id') id: number) {
     return this.followingService.findByFollowed(id);
   }
 
-  @Public()
   @Delete()
   async remove(@Body() followingDto: FollowingDto) {
     try {

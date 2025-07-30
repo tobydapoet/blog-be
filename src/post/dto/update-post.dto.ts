@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsArray,
   IsBoolean,
@@ -9,14 +10,17 @@ import {
 export class UpdatePostDto {
   @IsOptional()
   @IsString()
+  @ApiProperty()
   content?: string;
 
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @ApiProperty()
   images?: string[];
 
   @IsOptional()
   @IsBoolean()
+  @ApiProperty()
   isDeleted?: boolean;
 }

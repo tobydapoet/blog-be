@@ -3,7 +3,9 @@ import { StaffService } from './staff.service';
 import { Role } from 'src/auth/enums/role.enum';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UpdateStaffDto } from './dto/update-staff.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth()
 @Controller('staff')
 export class StaffController {
   constructor(private readonly staffService: StaffService) {}
