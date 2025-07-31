@@ -10,5 +10,10 @@ export class UpdateChatDto {
   @IsOptional()
   @IsBoolean()
   @ApiProperty()
+  isRead?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  @ApiProperty()
   isDeleted?: boolean;
 }

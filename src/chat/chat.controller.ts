@@ -16,6 +16,7 @@ import { CreateChatDto } from './dto/create-chat.dto';
 import { UpdateChatDto } from './dto/update-chat.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('chat')
 export class ChatController {
@@ -36,15 +37,16 @@ export class ChatController {
     return this.chatService.getAllConversations(id);
   }
 
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
+  @Public()
   @Post()
   @UseInterceptors(FileInterceptor('files'))
-  create(
+  async create(
     @Body() createChatDto: CreateChatDto,
     @UploadedFiles() files?: Express.Multer.File[],
   ) {
     try {
-      const res = this.chatService.create(createChatDto, files);
+      const res = await this.chatService.create(createChatDto, files);
       return {
         success: true,
         res: res,
@@ -59,9 +61,9 @@ export class ChatController {
 
   @ApiBearerAuth()
   @Put(':id')
-  update(@Param('id') id: number, @Body() updateChatDto: UpdateChatDto) {
+  async update(@Param('id') id: number, @Body() updateChatDto: UpdateChatDto) {
     try {
-      const res = this.chatService.update(id, updateChatDto);
+      const res = await this.chatService.update(id, updateChatDto);
       return {
         success: true,
         res: res,

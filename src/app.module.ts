@@ -17,9 +17,8 @@ import { NotificationModule } from './notification/notification.module';
 import { AuthModule } from './auth/auth.module';
 import { RefreshTokenModule } from './refresh_token/refresh_token.module';
 import { UploadCloundiaryModule } from './upload_cloundiary/upload_cloundiary.module';
-import { CacheModule } from '@nestjs/cache-manager';
-import { redisStore } from 'cache-manager-ioredis-yet';
 import { RedisModule } from './redis/redis.module';
+import { GatewayModule } from './gateway/gateway.module';
 
 @Module({
   imports: [
@@ -49,6 +48,7 @@ import { RedisModule } from './redis/redis.module';
     RefreshTokenModule,
     UploadCloundiaryModule,
     RedisModule,
+    GatewayModule,
   ],
   controllers: [AppController],
   providers: [AppService],

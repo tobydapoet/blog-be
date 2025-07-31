@@ -50,5 +50,6 @@ import { GoogleStrategy } from './strategies/google.strategy';
       useClass: RolesGuard,
     },
   ],
+  exports: [JwtModule],
 })
 export class AuthModule {}

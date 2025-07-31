@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Socket.IO Test</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  </head>
+  <body>
+    <h1>WebSocket Chat Test</h1>
+
+    <input id="userId" placeholder="UserId của bạn" /><br /><br />
+    <input id="token" placeholder="JWT Token" /><br /><br />
+    <input id="receiver" placeholder="Receiver ID" /><br /><br />
+    <input id="content" placeholder="Tin nhắn" /><br /><br />
+
+    <button onclick="connect()">Kết nối</button>
+    <button onclick="send()">Gửi</button>
+
+    <script>
+      let socket;
+
+      function connect() {
+        const userId = document.getElementById('userId').value;
+        const token = document.getElementById('token').value;
+
+        socket = io('ws://localhost:3000', {
+          query: { userId },
+          extraHeaders: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        socket.on('connect', () => {
+          console.log('Socket connected:', socket.id);
+        });
+
+        socket.on('message', (msg) => {
+          console.log('Nhận được (message):', msg);
+        });
+
+        socket.on('receive_message', (msg) => {
+          console.log('Nhận từ người khác (receive_message):', msg);
+        });
+
+        socket.on('sender_message', (msg) => {
+          console.log('Tin nhắn đã gửi (sender_message):', msg);
+        });
+
+        socket.on('error_message', (msg) => {
+          console.error('Lỗi:', msg);
+        });
+      }
+
+      function send() {
+        if (!socket) {
+          alert('Chưa kết nối socket!');
+          return;
+        }
+
+        const sender = document.getElementById('userId').value;
+        const receiver = document.getElementById('receiver').value;
+        const content = document.getElementById('content').value;
+
+        const msg = { sender, receiver, content };
+        socket.emit('chat', msg);
+        console.log('Gửi tin nhắn:', msg);
+      }
+    </script>
+  </body>
+</html>

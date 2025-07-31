@@ -11,7 +11,6 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadCloundiaryService } from './upload_cloundiary.service';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
 
 @Controller('upload')
 export class UploadCloundiaryController {

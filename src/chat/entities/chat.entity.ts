@@ -33,6 +33,9 @@ export class Chat {
   @Column('json', { nullable: true })
   images: string[];
 
+  @Column({ type: 'boolean', default: false })
+  isRead: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 
